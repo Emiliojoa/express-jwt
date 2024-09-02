@@ -5,7 +5,7 @@ import session from 'express-session';
 import morgan from 'morgan';
 import path from 'path';
 
-import { database } from './db/database.js';
+import { pool } from './db/database.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -38,11 +38,12 @@ app.use(session({
 
 
 // Ruta para manejar el inicio de sesión
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
     const { username, password } = req.body;
+    const db = await pool()
 
     // Buscar usuario
-    const user = database.user.find(u => u.username === username && u.password === password);
+    const user = await db.user.find(u => u.username === username && u.password === password);
 
     if (user) {
         // Guardar información del usuario en la sesión
