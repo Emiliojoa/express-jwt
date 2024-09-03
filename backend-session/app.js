@@ -1,10 +1,9 @@
-
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
 import morgan from 'morgan';
 import path from 'path';
-import { router } from './router/router.js'; 
+import { router } from './src/router/router.js'; 
 
 
 const app = express();
