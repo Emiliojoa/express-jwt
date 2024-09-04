@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { SECRET_KEY } from "../config/env.js";
+import { SECRET_KEY } from "../config/env.js"; 
 
 export function generarJwt(userId) {
   return new Promise((resolve, reject) => {

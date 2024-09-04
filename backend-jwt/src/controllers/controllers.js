@@ -1,4 +1,5 @@
-import { getConnectionPool } from "../db/database.js";
+import { newConnection } from "../db/database.js";
+
 import { generarJwt } from "../helpers/generar-jwt.js";
 
 export async function login(req, res) {
@@ -6,7 +7,7 @@ export async function login(req, res) {
 
   try {
     // Conexión a la base de datos
-    const conexion = await getConnectionPool();
+    const conexion = await newConnection();
 
     // Consulta a la base de datos
     const [usuario] = await conexion.query(
@@ -64,4 +65,13 @@ export function logout(req, res) {
     console.error(error);
     return res.status(500).json({ message: "Error Inesperado" });
   }
+}
+
+export async function register (req, res) {
+  const { username, password } = req.body;
+  const conexion = await newConnection()
+  const newUser = await conexion.query("insert into users (username, password) values (?, ?)",[username,password])
+
+  return res.status(201).json({ message: "Usuario creado correctamente", data: newUser })
+
 }

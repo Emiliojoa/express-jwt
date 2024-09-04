@@ -1,11 +1,10 @@
 import jwt from "jsonwebtoken";
 import { SECRET_KEY } from "../config/env.js";
-import { getConnectionPool } from "../db/database.js";
-
+import { newConnection } from "../db/database.js";
 // Middleware para verificar el token JWT
 export async function verificarJwt(req, res, next) {
   const token = req.cookies.authToken || req.session.token;
-  const conexion = await getConnectionPool();
+  const conexion = await newConnection();
 
   if (!token) {
     await conexion.end();

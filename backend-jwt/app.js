@@ -3,9 +3,8 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import cors from "cors";
 import morgan from "morgan";
-import { PORT } from "./config/env.js";
-import { loginRouter } from "./router/router.js";
-
+import { PORT } from "./src/config/env.js";
+import { ruta } from "./src/router/router.js";
 const app = express();
 
 app.use(
@@ -38,7 +37,7 @@ app.use(
 );
 
 // Asegúrate de que este middleware venga después de la configuración de la sesión
-app.use(loginRouter);
+app.use(ruta);
 
 // Servidor escuchando
 app.listen(PORT, () => {
