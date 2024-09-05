@@ -90,28 +90,27 @@
               body: JSON.stringify({ username, password }),
             });
 
+            const messageElement = document.getElementById("message");
+
             if (!response.ok) {
-              divError.innerText = "Credenciales inválidas";
-              divError.classList.add(
-                "bg-danger",
-                "text-white",
-                "text-center",
-                "rounded",
-                "p-2",
-                "mt-3"
-              );
-
-              setTimeout(() => {
-                divError.hidden = true;
-              }, 3500);
-
+              // Si el servidor responde con un error 404, significa que el usuario no existe
+              if (response.status === 404) {
+                messageElement.innerText = "El usuario que ingresó no existe.";
+              } else {
+                messageElement.innerText = "Usuario o contreaseña incorrectas";
+              }
+              messageElement.classList.add("text-danger", "text-center");
               return;
             }
 
             const data = await response.json();
             console.log(data);
             window.location.href = "home.html";
-          } catch (error) {}
+          } catch (error) {
+            console.error("Error:", error);
+            document.getElementById("message").innerText =
+              "Hubo un error en el servidor.";
+          }
         });
     </script>
   </body>

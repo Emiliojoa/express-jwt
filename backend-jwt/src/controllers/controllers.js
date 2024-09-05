@@ -69,9 +69,27 @@ export function logout(req, res) {
 
 export async function register (req, res) {
   const { username, password } = req.body;
-  const conexion = await newConnection()
-  const newUser = await conexion.query("insert into users (username, password) values (?, ?)",[username,password])
+  const conexion = await newConnection();
 
-  return res.status(201).json({ message: "Usuario creado correctamente", data: newUser })
+  try {
+    // Verificar si el usuario ya existe
+    const [existingUser] = await conexion.query("SELECT * FROM users WHERE username = ?", [username]);
 
+    if (existingUser.length > 0) {
+      // Si ya existe, retornar error 409
+      return res.status(409).json({ message: "El nombre de usuario ya existe, por favor elija otro" });
+    }
+
+    // Si no existe, insertar el nuevo usuario
+    const [newUser] = await conexion.query("INSERT INTO users (username, password) VALUES (?, ?)", [username, password]);
+
+    // Retornar éxito
+    return res.status(201).json({ message: "Usuario creado correctamente", data: newUser });
+  } catch (error) {
+    console.error("Error al registrar usuario: ", error);
+    return res.status(500).json({ message: "Error del servidor" });
+  } finally {
+    await conexion.end(); // Asegúrate de cerrar la conexión
+  }
 }
+

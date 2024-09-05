@@ -76,7 +76,7 @@
           // Validación básica
           if (!username || !password) {
             document.getElementById("message").innerText =
-              "Por favor, completa todos los campos.";
+              "Por favor, complete todos los campos";
             return;
           }
 
@@ -90,20 +90,19 @@
               body: JSON.stringify({ username, password }),
             });
 
-            if (!response.ok) {
-              divError.innerText = "Credenciales inválidas";
-              divError.classList.add(
-                "bg-danger",
-                "text-white",
-                "text-center",
-                "rounded",
-                "p-2",
-                "mt-3"
-              );
+            const messageElement = document.getElementById("message");
 
-              setTimeout(() => {
-                divError.hidden = true;
-              }, 3500);
+            if (!response.ok) {
+              if (response.status === 409) {
+                messageElement.innerText =
+                  "El nombre de usuario ya existe, elija otro.";
+              } else if (response.status === 404) {
+                messageElement.innerText =
+                  "No se pudo conectar con el servidor.";
+              } else {
+                messageElement.innerText = "Credenciales inválidas.";
+              }
+              messageElement.classList.add("text-danger", "text-center");
 
               return;
             }
@@ -111,7 +110,11 @@
             const data = await response.json();
             console.log(data);
             window.location.href = "index.html";
-          } catch (error) {}
+          } catch (error) {
+            console.log("Error", error);
+            document.getElementById("message").innerText =
+              "Hubo un error con el servidor";
+          }
         });
     </script>
   </body>
