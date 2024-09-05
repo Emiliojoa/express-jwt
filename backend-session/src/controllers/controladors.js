@@ -1,67 +1,89 @@
-import { pool } from "../db/database.js";
+import { newConnection } from "../db/database.js";
 
-
-export async function login(req, res) {
+export const login = async (req, res) => {
   const { username, password } = req.body;
-  const db = pool;
+  const conexion = await newConnection();
+  const [user] = await conexion.query(
+    "Select * from users where username = ? AND password = ?",
+    [username, password]
+  );
+  const usuario = user[0];
+
+  if (usuario) {
+    // Guardar información del usuario en la sesión
+    req.session.userId = usuario.id;
+    req.session.username = usuario.username;
+
+    return res.json({
+      message: "Inicio de sesión exitoso",
+      user: { id: user.id, username: user.username },
+    });
+  } else {
+    return res.status(401).json({ message: "Credenciales incorrectas" });
+  }
+};
+
+export const session = (req, res) => {
+  if (req.session.userId) {
+    return res.json({
+      loggedIn: true,
+      user: { id: req.session.userId, username: req.session.username },
+    });
+  } else {
+    return res
+      .status(401)
+      .json({ loggedIn: false, message: "No hay sesión activa" });
+  }
+};
+
+export function logout(req, res) {
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Error al cerrar sesión" });
+      }
+
+      res.clearCookie("authToken");
+      return res.json({ message: "Cierre de sesión exitoso" });
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error Inesperado" });
+  }
+}
+
+export async function register(req, res) {
+  const { username, password } = req.body;
+  const conexion = await newConnection();
 
   try {
-    const client = await db.connect();
-    const result = await client.query(
-      "SELECT * FROM users WHERE username = $1 AND password = $2",
+    // Verificar si el usuario ya existe
+    const [existingUser] = await conexion.query(
+      "SELECT * FROM users WHERE username = ?",
+      [username]
+    );
+
+    if (existingUser.length > 0) {
+      // Si ya existe, retornar error 409
+      return res.status(409).json({
+        message: "El nombre de usuario ya existe, por favor elija otro",
+      });
+    }
+
+    // Si no existe, insertar el nuevo usuario
+    const [newUser] = await conexion.query(
+      "INSERT INTO users (username, password) VALUES (?, ?)",
       [username, password]
     );
-    client.release();
 
-    if (result.rows.length > 0) {
-      // Guardar información del usuario en la sesión
-      req.session.userId = result.rows[0].id;
-      req.session.username = result.rows[0].username;
-
-      return res.json({
-        message: "Inicio de sesión exitoso",
-        user: { id: result.rows[0].id, username: result.rows[0].username },
-      });
-    } else {
-      return res.status(401).json({ message: "Credenciales incorrectas" });
-    }
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Error al iniciar sesión" });
-  }
-}
-
-export async function registro(req, res) {
-  const { username, password } = req.body;
-  // Try to create a new user
-  try {
-    const newUser = await userService.createUser({
-      username,
-      password,
-    });
-    // If the user already exists
-    if (newUser instanceof Error) {
-      return res.status(400).json({ message: newUser.message });
-    }
-    // If the user is created
-    res.status(201).json({
-      message: "Usuario creado correctamente",
-      data: newUser,
-    });
-    // If there is an error
+    // Retornar éxito
+    return res
+      .status(201)
+      .json({ message: "Usuario creado correctamente", data: newUser });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Error del servidor" });
+    console.error("Error al registrar usuario: ", error);
+    return res.status(500).json({ message: "Error del servidor" });
+  } finally {
+    await conexion.end(); // Asegúrate de cerrar la conexión
   }
-}
-
-export async function logout(req, res) {
-  console.log(req.session);
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ message: "Error al cerrar la sesión" });
-    }
-    res.clearCookie("connect.sid"); // Nombre de cookie por defecto para express-session
-    return res.json({ message: "Sesión cerrada exitosamente" });
-  });
 }

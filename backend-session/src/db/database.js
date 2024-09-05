@@ -1,18 +1,10 @@
-import {createPool} from 'mysql2/promise';
-2
-export const pool = createPool({
-    host: 'localhost',
-    user: 'root',
-    database: 'db_system',
-});
+import mysql2 from "mysql2/promise";
 
-pool.getConnection(function (err, connection) {
-    if (err instanceof Error) {
-    console.log(err);
-    return;
+export async function newConnection() {
+  const connection = await mysql2.createConnection({
+    host: "localhost",
+    user: "root",
+    database: "db_system",
+  });
+  return connection;
 }
-
-  // ... some query
-
-connection.release();
-});
