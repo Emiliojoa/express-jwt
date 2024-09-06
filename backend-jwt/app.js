@@ -3,8 +3,8 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import cors from "cors";
 import morgan from "morgan";
-import { PORT } from "./src/config/env.js";
 import { ruta } from "./src/router/router.js";
+import { valoresBD } from "./src/config/env.js";
 const app = express();
 
 app.use(
@@ -40,6 +40,6 @@ app.use(
 app.use(ruta);
 
 // Servidor escuchando
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+app.listen(valoresBD.PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${valoresBD.PORT}`);
 });

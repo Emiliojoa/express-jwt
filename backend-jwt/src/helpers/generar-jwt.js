@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { SECRET_KEY } from "../config/env.js"; 
+import { valoresBD } from "../config/env.js";
 
 export function generarJwt(userId) {
   return new Promise((resolve, reject) => {
@@ -7,9 +7,9 @@ export function generarJwt(userId) {
 
     jwt.sign(
       payload,
-      SECRET_KEY,
+      valoresBD.SECRET_KEY,
       {
-        expiresIn: "4h",
+        expiresIn: "5h",
       },
       (error, token) => {
         if (error) {
